@@ -1,0 +1,92 @@
+<?xml version="1.0" ?><!-- Example: ALI UPG Descriptor --><Descriptor>
+	<ali_ini_head>
+		<SYSINI ALI_CHIP="C3921" FlashTable="NandList_v2.ran"/>		
+		<ALI-PRIVATE-PARTITION0 ALI_PRIVATE_RESERVED_BLOCK="0x02" SecondCpu="" size="0x800000"/>		
+		<SYSTEM-START-ADDRESS START_ADDR="0x83C00000" TDS_ADDR="0x400"/>		
+		<STARTUP-FILE>
+			<DRAM>sdram_C3921_QFP_1GB_1066Mbps.abs</DRAM>
+			<UPDATER>nand_updater_loader.axf.bin</UPDATER>
+			<LOADER>uboot_unify_1GB_training.abs</LOADER>
+		</STARTUP-FILE>
+	</ali_ini_head>
+	
+	<sys_info>		
+		<sw_ver>sw1.1.1</sw_ver>
+	</sys_info>
+	
+	<!-- nfs_enable -->
+	<!-- 0x00: nfs disable -->
+	<!-- 0x01: nfs enable -->
+	<!-- DHCP_enable -->
+	<!-- 0x00: DHCP disable, DNS enable, must config board_net_config -->
+	<!-- 0x01: DHCP enable, need not config board_net_config -->
+	<NFS_config DHCP_enable="0" NFS_enable="0">		
+		<server IP="192.168.1.2" path="~/PDK/linux/kernel/install/fs"/>			
+		<board IP="192.168.1.3" gateway="192.168.1.1" netmask="255.255.255.0"/>
+	</NFS_config>
+
+	<!-- more cmdline define here -->
+	<cmdline> init=/init androidboot.console=ttyS0</cmdline>
+	<!--recovery.param(1:enable, 0:disable) -->
+	<!--bit0: reset system -->
+	<!--bit1: USB/SD upgrade -->
+	<!--bit2: OTA upgrade -->
+	<!--bit3: NET upgrade -->	
+	<recovery_cmdline>init=/init androidboot.console=ttyS0 recovery.param=3</recovery_cmdline>
+			
+	<!-- flash_type: nand/emmc/nor -->
+	<!-- level: private/protected/public -->
+	<!-- local: fixed/unfixed -->
+	<!-- fs_type: ""/initrd/yaffs2/cramfs -->		
+	<!-- fs_flag: ""/ro/rw -->
+	<!-- flag: readonly,locked,hidden -->			
+	<part_loop block_size="2M" flash_size="4G" flash_type="nand" page_size="8K">
+		<part file="uboot_unify_1GB_training.abs" local="fixed" name="boot" package="bootloader.img">
+			<size>0x800000</size>
+			<version>ALiBoot1.3.0</version>
+		</part>	
+		<part file="uboot_unify_1GB_training.abs" level="protected" local="fixed" name="bootbak">
+			<size>0x800000</size>					
+		</part>		
+		<part file="bootargs.abs" local="fixed" name="bootargs" package="bootargs.img">
+			<size>0x800000</size>
+		</part>
+		<part file="deviceinfo.abs" level="protected" local="fixed" name="deviceinfo">
+			<size>0x800000</size>
+		</part>		
+		<part file="baseparams.abs" level="protected" local="fixed" name="baseparams">
+			<size>0x800000</size>
+		</part>	
+		<part file="" level="protected" local="fixed" name="misc">
+			<size>0x800000</size>
+		</part>			
+		<part file="recovery.ubo" local="fixed" name="recovery" package="recovery.img">
+			<size>0x2000000</size>
+			<version>ALiRecovery1.4.1</version>
+		</part>
+		<part file="recovery.ubo" local="fixed" name="recoverybak">
+			<size>0x2000000</size>
+		</part>
+		<part file="backup.abs" local="fixed" name="backup">
+			<size>0x14000000</size>
+		</part>
+		<part file="cache.img" fs_type="ubifs" local="fixed" name="cache">
+			<size>0x1B800000</size>
+		</part>
+		<part file="bootmedia.ubo" local="unfixed" name="bootmedia" package="bootmedia.img">
+			<size>0x1000000</size>
+		</part>
+		<part file="kernel.ubo" local="unfixed" name="kernel" package="kernel.img">
+			<size>0x2000000</size>
+		</part>
+		<part file="system.img" fs_type="ubifs" local="unfixed" name="system" package="/system">
+			<size>0x1D000000</size>
+			<version>ALi2.2.0-RC4</version>
+		</part>
+		<part file="userdata.img" fs_type="ubifs" local="fixed" name="data">
+		        <!-- the last part size will be auto computed -->
+		        <!-- lastpartsize = flash_size-lastpartoffset-block_size*16 -->
+			<size resize="auto">0xa7800000</size>
+		</part>
+	</part_loop>	
+</Descriptor>
